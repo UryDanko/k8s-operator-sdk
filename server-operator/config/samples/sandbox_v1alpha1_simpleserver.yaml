@@ -1,0 +1,7 @@
+apiVersion: sandbox.example.com/v1alpha1
+kind: SimpleServer
+metadata:
+  name: simpleserver-sample
+spec:
+  # Add fields here
+  foo: bar
