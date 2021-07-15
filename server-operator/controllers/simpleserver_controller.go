@@ -143,6 +143,13 @@ func (r *SimpleServerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{RequeueAfter: timeout}, err
 	}
 
+	err = r.ReconcileConfigMap(ctx, log, simpleServer)
+	if err != nil {
+		timeout := 60 * time.Second
+		log.Error(err, fmt.Sprintf("failed to reconcile Service, retrying in %ss", timeout))
+		return ctrl.Result{RequeueAfter: timeout}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
