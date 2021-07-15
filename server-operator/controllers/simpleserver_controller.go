@@ -17,6 +17,7 @@ limitations under the License.
 package controllers
 
 import (
+	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -59,6 +60,8 @@ type SimpleServerReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *SimpleServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
+
+	log.Info("Start reconciling loop")
 
 	// Fetch the SimpleServer instance
 	simpleServer := &sandboxv1alpha1.SimpleServer{}
@@ -133,6 +136,13 @@ func (r *SimpleServerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		}
 	}
 
+	err = r.ReconcileService(ctx, log, simpleServer)
+	if err != nil {
+		timeout := 60 * time.Second
+		log.Error(err, fmt.Sprintf("failed to reconcile Service, retrying in %ss", timeout))
+		return ctrl.Result{RequeueAfter: timeout}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -171,12 +181,6 @@ func (r *SimpleServerReconciler) createDeployment(m *sandboxv1alpha1.SimpleServe
 	// Set instance as the owner and controller
 	ctrl.SetControllerReference(m, dep, r.Scheme)
 	return dep
-}
-
-// makeLabels returns the labels for selecting the resources
-// belonging to the given simpleServer CR name.
-func makeLabels(name string) map[string]string {
-	return map[string]string{"app": "simpleServer", "simpleServer_cr": name}
 }
 
 // getPodNames returns the pod names of the array of pods passed in
