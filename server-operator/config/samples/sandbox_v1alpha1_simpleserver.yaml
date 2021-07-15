@@ -4,4 +4,4 @@ metadata:
   name: simpleserver-sample
 spec:
   # Add fields here
-  foo: bar
+  size: 1
