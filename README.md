@@ -1,4 +1,4 @@
-# assignment-k8s-operator-go
+# k8s-operator-go
 
 ## Initialization
 * Initialize operator with `operator-sdk init --domain example.com --repo gitlab.com/sandbox/simple-server-operator`
