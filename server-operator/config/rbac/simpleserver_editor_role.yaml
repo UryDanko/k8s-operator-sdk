@@ -1,0 +1,24 @@
+# permissions for end users to edit simpleservers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: simpleserver-editor-role
+rules:
+- apiGroups:
+  - sandbox.example.com
+  resources:
+  - simpleservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sandbox.example.com
+  resources:
+  - simpleservers/status
+  verbs:
+  - get
