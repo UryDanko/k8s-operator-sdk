@@ -75,6 +75,12 @@ func (r *SimpleServerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, err
 	}
 
+	err = r.ReconcileConfigMap(ctx, log, simpleServer)
+	if err != nil {
+		log.Error(err, fmt.Sprintf("failed to reconcile Service, retrying in %ss", timeout))
+		return ctrl.Result{RequeueAfter: timeout}, err
+	}
+
 	err = r.ReconcileDeployment(ctx, log, simpleServer)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("failed to reconcile Deployment, retrying in %ss", timeout))
@@ -82,12 +88,6 @@ func (r *SimpleServerReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	err = r.ReconcileService(ctx, log, simpleServer)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("failed to reconcile Service, retrying in %ss", timeout))
-		return ctrl.Result{RequeueAfter: timeout}, err
-	}
-
-	err = r.ReconcileConfigMap(ctx, log, simpleServer)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("failed to reconcile Service, retrying in %ss", timeout))
 		return ctrl.Result{RequeueAfter: timeout}, err

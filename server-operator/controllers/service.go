@@ -17,7 +17,7 @@ import (
 func (r *SimpleServerReconciler) ReconcileService(ctx context.Context, log logr.Logger, server *sandboxv1alpha1.SimpleServer) error {
 	log.Info("Start reconciling service")
 	service := &corev1.Service{}
-	serviceName := fmt.Sprintf("%s-service", server.Name)
+	serviceName := getServiceName(server.Name)
 	err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: server.Namespace}, service)
 	if err != nil && !errors.IsNotFound(err) {
 		return err

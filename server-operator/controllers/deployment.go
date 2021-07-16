@@ -22,18 +22,18 @@ func (r *SimpleServerReconciler) ReconcileDeployment(ctx context.Context, log lo
 	err := r.Get(ctx, types.NamespacedName{Name: server.Name, Namespace: server.Namespace}, depl)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := createDeployment(server)
+		depl = createDeployment(server, getConfigMapName(server.Name))
 		// Set instance as the owner and controller
-		err := ctrl.SetControllerReference(server, dep, r.Scheme)
+		err := ctrl.SetControllerReference(server, depl, r.Scheme)
 		if err != nil {
 			log.Info("Error failed to set owner reference", "error", err)
 			return err
 		}
 
-		log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.Create(ctx, dep)
+		log.Info("Creating a new Deployment", "Deployment.Namespace", depl.Namespace, "Deployment.Name", depl.Name)
+		err = r.Create(ctx, depl)
 		if err != nil {
-			log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+			log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", depl.Namespace, "Deployment.Name", depl.Name)
 			return err
 		}
 		// Deployment created successfully - return and requeue
@@ -85,13 +85,13 @@ func (r *SimpleServerReconciler) ReconcileDeployment(ctx context.Context, log lo
 }
 
 // createDeployment returns a SimpleServer Deployment object
-func createDeployment(server *sandboxv1alpha1.SimpleServer) *appsv1.Deployment {
+func createDeployment(server *sandboxv1alpha1.SimpleServer, configMapName string) *appsv1.Deployment {
 	ls := makeLabels(server.Name)
 	replicas := server.Spec.Size
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      server.Name,
+			Name:      getDeploymentName(server.Name),
 			Namespace: server.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -111,6 +111,16 @@ func createDeployment(server *sandboxv1alpha1.SimpleServer) *appsv1.Deployment {
 							ContainerPort: 8080,
 							Name:          "simpleserver",
 						}},
+						ImagePullPolicy: "Always",
+						EnvFrom: []corev1.EnvFromSource{
+							{
+								ConfigMapRef: &corev1.ConfigMapEnvSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: configMapName,
+									},
+								},
+							},
+						},
 					}},
 				},
 			},

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-logr/logr"
 	sandboxv1alpha1 "gitlab.com/sandbox/simple-server-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -15,7 +14,7 @@ import (
 func (r *SimpleServerReconciler) ReconcileConfigMap(ctx context.Context, log logr.Logger, server *sandboxv1alpha1.SimpleServer) error {
 	log.Info("Start reconciling config map")
 	configMap := &corev1.ConfigMap{}
-	configMapName := fmt.Sprintf("%s-config", server.Name)
+	configMapName := getConfigMapName(server.Name)
 	err := r.Get(ctx, types.NamespacedName{Name: configMapName, Namespace: server.Namespace}, configMap)
 	if err != nil && !errors.IsNotFound(err) {
 		return err
@@ -49,9 +48,9 @@ func createConfigMap(configMapName string, server *sandboxv1alpha1.SimpleServer)
 			Annotations: make(map[string]string),
 		},
 		Data: map[string]string{
-			"property0": "value0",
-			"property1": "value1",
-			"property2": "value2",
+			"PROPERTY_0": "value0",
+			"PROPERTY_1": "value1",
+			"PROPERTY_2": "value2",
 		},
 	}
 
