@@ -32,6 +32,9 @@ spec:
         image: controller:latest
         imagePullPolicy: Always
         name: manager
+        env:
+          - name: WATCH_NAMESPACE
+            value: ""
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
